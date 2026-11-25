@@ -22,7 +22,7 @@ It shows the real dashboard and the decisions of the published broker, in a stat
   and the clients that ask for leases. No real host, token or address is involved, and the recorder clears the
   environment before it starts.
 - **Time:** scenes run on an event loop whose clock jumps to the next timer ([record/virtual.py](record/virtual.py)), so
-  51 minutes record in well under a second. Lease ids are seeded. argus-iris is patched only where it reads the clock
+  all five, the last one 51 minutes long, record in about three seconds. Lease ids are seeded. argus-iris is patched only where it reads the clock
   and draws ids.
 - **Captions:** each one is raised only after the broker has done what it describes; a scene whose story does not happen
   fails to record. CI records every scene again and fails if a committed tape would change.
