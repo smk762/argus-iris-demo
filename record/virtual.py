@@ -62,6 +62,7 @@ def install() -> None:
         if sys.modules["argus_iris.models"].utcnow is not utcnow:
             raise RuntimeError("install() must run before argus_iris.broker is imported")
         return
+    import argus_cortex.service
     import argus_iris.models
 
     argus_iris.models.utcnow = utcnow
@@ -69,6 +70,8 @@ def install() -> None:
     import argus_iris.broker.leases
 
     argus_iris.broker.actions.time = SimpleNamespace(monotonic=elapsed)
+    # /health times its checks (latency_ms): on the real clock that differs from run to run.
+    argus_cortex.service.time = SimpleNamespace(monotonic=elapsed, perf_counter=elapsed)
 
 
 def run(coro_fn, seed: int):

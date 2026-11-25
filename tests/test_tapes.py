@@ -48,3 +48,11 @@ def test_memory_never_exceeds_the_card():
         for e in tape["init"] + tape["events"]:
             if e["e"] == "node" and e["d"]["gpu"]:
                 assert 0 <= e["d"]["gpu"]["free_mb"] <= e["d"]["gpu"]["total_mb"], (path.name, e.get("t"))
+
+
+def test_a_slow_machine_records_the_same(fresh, monkeypatch):
+    import time
+
+    real, calls = time.perf_counter, iter(range(1, 10**9))
+    monkeypatch.setattr(time, "perf_counter", lambda: real() + next(calls))  # every real reading a second apart
+    assert {k: dumps(v) for k, v in record_all().items()} == {k: dumps(v) for k, v in fresh.items()}
