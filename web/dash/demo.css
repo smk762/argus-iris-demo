@@ -1,0 +1,8 @@
+/* Only what a recording needs: hide controls that do nothing here, and mark the node the caption is about. */
+#token-btn, [data-dh-theme-toggle], .node .seen { display: none !important; }
+#live .dot { animation: none !important; }
+.node { scroll-margin-block-start: 5rem; transition: outline-color .2s; outline: 2px solid transparent; outline-offset: 6px; border-radius: var(--dh-radius-lg); }
+.node.demo-focus { outline-color: var(--dh-accent); }
+/* The tour is about leases: show them first, and give every table the full width so it stays a table. */
+.node .tables { display: flex; flex-direction: column; }
+.node .tables > .table-wrap:has(table.leases) { order: -1; }

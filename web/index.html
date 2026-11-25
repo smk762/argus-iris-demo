@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en" data-dh-site="iris">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="light dark">
+  <title>argus-iris: sharing a few GPUs without out-of-memory errors</title>
+  <meta name="description" content="A guided replay of argus-iris, a GPU lease broker: the published release making real scheduling decisions on simulated cards.">
+  <link rel="icon" href="dash/ui/brand/favicon.ico" sizes="48x48">
+  <link rel="icon" href="dash/ui/brand/icon.svg" type="image/svg+xml">
+  <script src="vendor/dh/dh-theme.js"></script>
+  <link rel="stylesheet" href="vendor/dh/dh-tokens.css">
+  <link rel="stylesheet" href="vendor/dh/dh-strip.css">
+  <link rel="stylesheet" href="vendor/dh/dh-badge.css">
+  <link rel="stylesheet" href="demo.css">
+  <script type="module" src="demo.js"></script>
+</head>
+<body>
+  <a class="skip" href="#tour">Skip to the tour</a>
+  <!-- dh-strip -->
+  <header class="top">
+    <h1>
+      <img class="lockup light" src="dash/ui/brand/argus-iris-lockup-light.svg" alt="argus iris" width="159" height="30">
+      <img class="lockup dark" src="dash/ui/brand/argus-iris-lockup-dark.svg" alt="" width="159" height="30">
+    </h1>
+    <p class="pitch">A lease broker for a few mixed GPUs. It decides whether a job may start, on which card, and which idle model must go first.</p>
+    <nav class="links" aria-label="Project">
+      <a href="https://github.com/smk762/argus-iris">Source</a>
+      <a href="https://github.com/smk762/argus-iris/blob/main/DESIGN.md">Design</a>
+      <a href="https://pypi.org/project/argus-iris/">PyPI</a>
+      <button type="button" class="btn" data-dh-theme-toggle aria-label="Dark theme">Theme</button>
+    </nav>
+  </header>
+
+  <main class="stage">
+    <section class="tour" id="tour" aria-label="Guided tour" tabindex="-1">
+      <nav class="scenes" aria-label="Scenes"><ol id="scenes"></ol></nav>
+      <p class="lede" id="lede"></p>
+
+      <div class="caption" id="caption" aria-live="polite" aria-atomic="true">
+        <p class="step" id="step"></p>
+        <h2 id="beat-title">Loading the recording…</h2>
+        <p id="beat-text"></p>
+      </div>
+
+      <div class="controls">
+        <button type="button" class="btn" id="prev" aria-label="Previous step">‹ Back</button>
+        <button type="button" class="btn primary" id="play">Play</button>
+        <button type="button" class="btn" id="next" aria-label="Next step">Next ›</button>
+      </div>
+      <div class="scrub">
+        <label for="seek">Recording time</label>
+        <output for="seek" id="clock">0:00</output>
+        <input type="range" id="seek" min="0" max="1000" value="0" step="1">
+      </div>
+
+      <details class="why" id="why" open>
+        <summary>Why it is built this way</summary>
+        <p id="why-text"></p>
+        <ul id="code"></ul>
+      </details>
+      <details class="log">
+        <summary>Broker log <span class="muted" id="log-count"></span></summary>
+        <ol id="log" tabindex="0" aria-label="Broker log, newest last"></ol>
+      </details>
+
+      <p class="truth"><span class="dh-badge">Recorded</span> This is the real dashboard and the published <a id="version" href="https://pypi.org/project/argus-iris/">argus-iris</a> broker.
+        The GPUs, models and clients are simulated; every decision on screen is the broker’s own.
+        <a href="https://github.com/smk762/argus-iris-demo#how-it-was-recorded">How it was recorded</a></p>
+    </section>
+
+    <section class="dash" aria-label="Dashboard replay">
+      <iframe id="dash" title="argus-iris dashboard, replaying a recording" src="about:blank"></iframe>
+    </section>
+  </main>
+  <noscript><p class="noscript">The replay needs JavaScript. The <a href="https://github.com/smk762/argus-iris">repository</a> explains what argus-iris does.</p></noscript>
+</body>
+</html>

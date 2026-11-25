@@ -1,0 +1,24 @@
+[project]
+name = "argus-iris-demo"
+version = "0"
+description = "Guided replay of argus-iris: the published broker, recorded against simulated GPU hosts"
+requires-python = ">=3.11"
+# The published wheel, pinned: the demo shows what `pip install argus-iris` gives you.
+dependencies = ["argus-iris[server,cli]==0.2.1"]
+
+[dependency-groups]
+dev = ["pytest>=8", "ruff==0.15.16", "playwright>=1.45"]
+
+[tool.uv]
+package = false
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "SIM"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
