@@ -11,7 +11,7 @@ OUT = Path(__file__).parent.parent / "out"
 
 
 def headers() -> list[tuple[str, str]]:
-    lines = (OUT / "_headers").read_text().splitlines()
+    lines = (OUT / "_headers").read_text().split("\n/dash")[0].splitlines()  # the /* block
     pairs = (line.strip().split(": ", 1) for line in lines if line.startswith("  "))
     return [(k, v) for k, v in pairs if k != "Strict-Transport-Security"]
 

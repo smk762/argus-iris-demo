@@ -11,9 +11,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
 OUT = ROOT / "out"
+# Cloudflare Web Analytics is on for the zone, as on dragonhound.dev: its edge adds the beacon script to HTML.
 CSP = "; ".join(
     [
-        "default-src 'self'", "script-src 'self'", "style-src 'self'", "img-src 'self'", "connect-src 'self'",
+        "default-src 'self'", "script-src 'self' https://static.cloudflareinsights.com", "style-src 'self'", "img-src 'self'", "connect-src 'self' https://cloudflareinsights.com",
         "frame-src 'self'", "frame-ancestors 'self'", "object-src 'none'", "base-uri 'none'", "form-action 'none'",
     ]
 )  # fmt: skip
@@ -48,6 +49,8 @@ def main() -> None:
         f"/*\n  Content-Security-Policy: {CSP}\n  X-Frame-Options: SAMEORIGIN\n  X-Content-Type-Options: nosniff\n"
         "  Referrer-Policy: strict-origin-when-cross-origin\n  Permissions-Policy: camera=(), geolocation=(), microphone=()\n"
         "  Cross-Origin-Opener-Policy: same-origin\n  Strict-Transport-Security: max-age=31536000\n"
+        # The framed dashboard is part of the same visit: no-transform keeps the edge from adding a second beacon to it.
+        "/dash/ui/*\n  Cache-Control: public, max-age=0, must-revalidate, no-transform\n"
     )
     print(f"built {sum(1 for f in OUT.rglob('*') if f.is_file())} files into {OUT.relative_to(ROOT)}/")
 

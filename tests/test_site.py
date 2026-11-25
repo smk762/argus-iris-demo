@@ -66,6 +66,11 @@ def test_every_step_of_every_scene(site, page, key):
             expect(dash.locator(f"#node-{beat['focus']}.demo-focus")).to_have_count(1)
 
 
+def test_the_dashboard_frame_gets_no_second_beacon(site):
+    frame = (OUT / "_headers").read_text().split("/dash/ui/*")[1]
+    assert "no-transform" in frame
+
+
 def test_there_is_a_404_page(site):
     # Without one, Cloudflare Pages answers unknown paths with the tour and a 200.
     assert "Not found" in (OUT / "404.html").read_text()
