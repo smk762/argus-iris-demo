@@ -52,16 +52,16 @@ server = [
 
 [[package]]
 name = "argus-iris"
-version = "0.2.1"
+version = "0.2.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "pydantic" },
     { name = "pyyaml" },
     { name = "structlog" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/04/af/7352aef6d36dbf6c580f3cf74b0c08b988cd2a58b4fea28cdcb64ab715c5/argus_iris-0.2.1.tar.gz", hash = "sha256:a68edf1e05db5db5fbf67f0cf66a18786be9aa5ceb9cb0ed490e64f8f919ecec", size = 191880, upload-time = "2026-11-25T00:22:12.787Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/f8/50/c23607b2dd477be6058d369d1c4ee8dfe1c62edcdf1611419ea5b09c94cf/argus_iris-0.2.3.tar.gz", hash = "sha256:72f79e0dfdd51604d7688dd18e115ea3c47bc309a810e5f84271a1fdd98b5876", size = 420951, upload-time = "2026-11-28T00:09:41.988Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/ab/c6/373ebf8a28e828d8d41dce8672823d875c88dbee07dec2d0ca60439d64ac/argus_iris-0.2.1-py3-none-any.whl", hash = "sha256:e8b426c16fbf3c58bc0c6cdb8a557fd91688dfe740301cdd37c3d595f553b3a2", size = 129062, upload-time = "2026-11-25T00:22:11.565Z" },
+    { url = "https://files.pythonhosted.org/packages/32/4b/5018d968c0cae98c487e4910be211fba74d2e8e15a8ecd39e45df1b22ee9/argus_iris-0.2.3-py3-none-any.whl", hash = "sha256:838b01ed138b00de619b6675e2cf11fe8efc8c035189146dd9f77a7032413be4", size = 131316, upload-time = "2026-11-28T00:09:40.956Z" },
 ]
 
 [package.optional-dependencies]
@@ -94,7 +94,7 @@ dev = [
 ]
 
 [package.metadata]
-requires-dist = [{ name = "argus-iris", extras = ["server", "cli"], specifier = "==0.2.1" }]
+requires-dist = [{ name = "argus-iris", extras = ["server", "cli"], specifier = "==0.2.3" }]
 
 [package.metadata.requires-dev]
 dev = [

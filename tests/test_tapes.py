@@ -9,7 +9,7 @@ import pytest
 
 from record.__main__ import TAPE, dumps, record_all
 
-KEYS = ["contention", "eviction", "spill", "crash", "stall"]
+KEYS = ["contention", "eviction", "spill", "crash", "stall", "rehearse"]
 
 
 @pytest.fixture(scope="module")
@@ -31,8 +31,8 @@ def test_two_runs_agree(fresh):
 def test_captions_and_events_are_in_order(key):
     tape = json.loads((TAPE / f"{key}.json").read_text())
     for rows in (tape["events"], tape["logs"], tape["beats"]):
-        times = [r["t"] for r in rows]
-        assert times == sorted(times) and times[0] >= 0 and times[-1] <= tape["duration"]
+        times = [r["t"] for r in rows]  # rehearse has no events or log lines: a report-only broker changes nothing
+        assert times == sorted(times) and all(0 <= t <= tape["duration"] for t in times)
     assert len({b["t"] for b in tape["beats"]}) == len(tape["beats"])  # each caption is its own step
 
 

@@ -1,6 +1,6 @@
 # argus-iris-demo
 
-A guided, five-scene replay of [argus-iris](https://github.com/smk762/argus-iris), a lease broker for a few mixed GPUs.
+A guided, six-scene replay of [argus-iris](https://github.com/smk762/argus-iris), a lease broker for a few mixed GPUs.
 It shows the real dashboard and the decisions of the published broker, in a static page with no server and no GPU.
 
 ![The tour beside the dashboard: a batch job running, a training job queued, an interactive job granted ahead of it](docs/demo.png)
@@ -12,6 +12,7 @@ It shows the real dashboard and the decisions of the published broker, in a stat
 | Anywhere it fits | Work goes to another card that serves the same target |
 | When a client dies | The lease expires by itself and the next job starts |
 | Alive, but not working | Heartbeats without GPU work are flagged, asked to yield, then reclaimed |
+| Rehearse before you enforce | A report-only broker runs a new enforced rule beside production: it reports, refuses to act, and moves nothing |
 
 ## How it was recorded
 
@@ -22,7 +23,7 @@ It shows the real dashboard and the decisions of the published broker, in a stat
   and the clients that ask for leases. No real host, token or address is involved, and the recorder clears the
   environment before it starts.
 - **Time:** scenes run on an event loop whose clock jumps to the next timer ([record/virtual.py](record/virtual.py)), so
-  all five, the last one 51 minutes long, record in about three seconds. Lease ids are seeded. argus-iris (and the health check it takes from
+  all six, the longest 51 minutes, record in about three seconds. Lease ids are seeded. argus-iris (and the health check it takes from
   argus-cortex) is patched only where it reads the clock and draws ids.
 - **Captions:** each one is raised only after the broker has done what it describes; a scene whose story does not happen
   fails to record. CI records every scene again and fails if a committed tape would change.

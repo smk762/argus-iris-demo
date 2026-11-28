@@ -1,7 +1,7 @@
 // The replay: owns recording time, and hands the dashboard (in the iframe, untouched) the recorded API through
 // dash/shim.js. Recording time runs faster than life and skips quiet stretches; captions hold it still to be read.
 const $ = (id) => document.getElementById(id);
-const SCENES = ["contention", "eviction", "spill", "crash", "stall"];
+const SCENES = ["contention", "eviction", "spill", "crash", "stall", "rehearse"];
 const SPEED = 4; // recorded seconds per second
 const MAX_GAP = 2; // seconds of real time any quiet stretch may take
 
@@ -241,7 +241,7 @@ addEventListener("hashchange", () => {
   if (SCENES.includes(key) && key !== tape?.key) open(key, { play: false });
 });
 
-const TITLES = ["Two jobs, one card", "Trust the GPU", "Anywhere it fits", "When a client dies", "Alive, but not working"];
+const TITLES = ["Two jobs, one card", "Trust the GPU", "Anywhere it fits", "When a client dies", "Alive, but not working", "Rehearse before you enforce"];
 $("scenes").append(...SCENES.map((key, i) => {
   const li = document.createElement("li");
   const b = Object.assign(document.createElement("button"), { type: "button" });

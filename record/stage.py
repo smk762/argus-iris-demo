@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 
 import httpx
 import structlog
@@ -125,7 +126,7 @@ class Lease:
 
 
 class Stage:
-    def __init__(self, **config) -> None:
+    def __init__(self, policy: dict | None = None, **config) -> None:
         self.world = World()
         self.events: list[dict] = []
         self.init: list[dict] = []
@@ -133,16 +134,22 @@ class Stage:
         self.beats: list[dict] = []
         self.http: dict[str, object] = {}
         self.zero = 0.0
+        self.end = 0.0
         self._tasks: list[asyncio.Task] = []
         self.recording = False
         structlog.reset_defaults()
         structlog.configure(processors=[self._log], cache_logger_on_first_use=False)
         cfg = BrokerConfig.model_validate({"nodes": NODES, "services": SERVICES, "admission": "enforce"} | config)
         client = httpx.AsyncClient(transport=httpx.MockTransport(self.world.handle))
-        self.broker = Broker(cfg, client=client, policy=Policy.model_validate(POLICY))
+        self.broker = Broker(cfg, client=client, policy=Policy.model_validate(policy or POLICY))
         self.app = create_app(broker=self.broker, poll=False)
+        # A scene that sets the caller token (ARGUS_GPU_BROKER_TOKEN) has its clients send it, as cortex's would.
+        token = os.environ.get("ARGUS_GPU_BROKER_TOKEN")
         self.api = httpx.AsyncClient(
-            transport=httpx.ASGITransport(app=self.app), base_url="http://broker:8120", timeout=None
+            transport=httpx.ASGITransport(app=self.app),
+            base_url="http://broker:8120",
+            timeout=None,
+            headers={"Authorization": f"Bearer {token}"} if token else None,
         )
 
     def spawn(self, coro) -> asyncio.Task:
