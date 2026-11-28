@@ -6,7 +6,7 @@ import asyncio
 from dataclasses import dataclass, field
 from typing import Any
 
-from record.stage import Stage
+from record.stage import NODES, POLICY, SERVICES, Stage
 from record.virtual import utcnow
 
 
@@ -23,6 +23,8 @@ class Scene:
     play: Any
     code: list[tuple[str, str]]  # (label, "module:qualname") resolved to a line in the tagged source
     config: dict = field(default_factory=dict)
+    policy: dict | None = None  # the residency policy, if not the stage's
+    env: dict[str, str] = field(default_factory=dict)  # set only while this scene records
 
 
 # ── 1 ────────────────────────────────────────────────────────────────────────
@@ -277,6 +279,79 @@ async def stall(s: Stage) -> None:
     await asyncio.sleep(30)
 
 
+# ── 6 ────────────────────────────────────────────────────────────────────────
+
+# Production's policy with one more rule: idle-kill qwen3 on the RTX 4060, enforced.
+REHEARSE_RULE = {"match": {"node": "rtx4060", "ollama": "qwen3:*"}, "idle_kill": "10m", "enforce": True}
+REHEARSE_POLICY = {"residents": [*POLICY["residents"], REHEARSE_RULE]}
+
+
+def approval_for_new_rule() -> list[str]:
+    """What `argus-iris check` says about adding REHEARSE_RULE to the deployed policy, from the real CLI."""
+    import json
+    import tempfile
+    from pathlib import Path
+
+    import yaml
+    from argus_iris.cli import app
+    from typer.testing import CliRunner
+
+    with tempfile.TemporaryDirectory() as d:
+        files = {"iris.yaml": {"admission": "enforce", "nodes": NODES, "services": SERVICES},
+                 "policy.yaml": POLICY, "policy.next.yaml": REHEARSE_POLICY}  # fmt: skip
+        for name, body in files.items():
+            (Path(d) / name).write_text(yaml.safe_dump(body))
+        cfg = str(Path(d) / "iris.yaml")
+        args = ["check", "-c", cfg, "--policy", f"{d}/policy.next.yaml", "--previous-config", cfg,
+                "--previous-policy", f"{d}/policy.yaml"]  # fmt: skip
+        # Run as the deploy step does: not report-only, or the enforced rule would be read as unenforced.
+        out = CliRunner().invoke(app, args, env={"IRIS_REPORT_ONLY": ""})
+    if out.exit_code != 0:
+        raise AssertionError(out.output)
+    return json.loads(out.stdout)["approval"]
+
+
+async def rehearse(s: Stage) -> None:
+    await asyncio.sleep(4)
+    qwen = lambda: next(x for x in s.node("rtx4060").residents if x.model == "qwen3:8b")  # noqa: E731
+    await s.until("the rule is due", lambda: qwen().policy and qwen().policy.next == "evict")
+    if qwen().policy.enforce or s.broker.config.admission != "observe":
+        raise AssertionError("report-only should unenforce the rule and make admission observe")
+    held, idle = qwen().vram_mb, round(qwen().policy.idle_s / 60)
+    s.note("Production's policy, on a broker that cannot act",
+           f"This is a second broker, beside production on the same GPUs, with production's config and one new rule: "
+           f"unload qwen3:8b after 10 idle minutes, enforce: true. It has been idle for {idle} minutes, so the rule is due. "
+           "But this broker runs with IRIS_REPORT_ONLY=1, so the dashboard says it would idle-kill, and "
+           "admission is observe-only.", "rtx4060")  # fmt: skip
+    await asyncio.sleep(12)
+    r = await s.api.post(f"/residents/{qwen().id}/evict")
+    if r.status_code != 403:
+        raise AssertionError(r.text)
+    s.note("Asked to evict, it refuses",
+           f"A manual evict gets “{r.json()['detail']}”, even with the right token. Enforced rules act through the "
+           "services themselves, Ollama's keep_alive and the services' unload routes, so withholding tokens is not "
+           "enough. Report-only is a switch in the broker, and /health shows it.", "rtx4060")  # fmt: skip
+    await asyncio.sleep(600)
+    if qwen().vram_mb != held or s.logged("resident_evicted"):
+        raise AssertionError("a report-only broker moved something")
+    s.note("Ten minutes on, nothing has moved",
+           f"qwen3:8b still holds {gb(held)} and the rule still only reports. Not one event has reached the dashboard "
+           "in ten minutes: nothing changed to send. A rehearsal shows what a policy would do to the real cards without "
+           "letting it do any of it.", "rtx4060")  # fmt: skip
+    await asyncio.sleep(8)
+    reasons = approval_for_new_rule()
+    s.note("Approved before production sees it",
+           f"Before either broker loaded the file, argus-iris check validated it with this release's own code and "
+           f"listed what needs a person: “{'; '.join(reasons)}”. Approve it, and production's broker unloads the "
+           "model, confirmed by the GPU, as in Trust the GPU.", "rtx4060")  # fmt: skip
+    await asyncio.sleep(14)
+
+
+def rehearse_setup(s: Stage) -> None:
+    s.world.load_now("rtx4060", "qwen3:8b", 4600, idle=1320)
+    s.world.engine_up("rtx4060", "argus-echo-whisper", idle=400)
+
+
 SCENES = [
     Scene("contention", "Two jobs, one card", "Two jobs want more memory than the card has.",
           "A free-memory check is a snapshot: two jobs can both pass it, then both load. iris keeps a reservation ledger "
@@ -302,5 +377,12 @@ SCENES = [
           "and only then withdraws the reservation. Reclaiming is off by default; this recording turns it on.",
           stall, [("The stall watchdog", "argus_iris.broker.leases:LeaseBook._watch"), ("What counts as working", "argus_iris.broker.leases:LeaseBook._working")],
           {"lease_stall_reclaim": True}),
+    Scene("rehearse", "Rehearse before you enforce", "A broker that reports and never acts.",
+          "A new policy rule is easiest to trust once you have watched it on the real cards. A report-only broker runs "
+          "production's files beside production and changes nothing: every rule only reports, admission only "
+          "observes, and manual actions are refused. `argus-iris check` lists what a change needs approval for.",
+          rehearse, [("Report-only", "argus_iris.broker.config:report_only"), ("Every rule unenforced", "argus_iris.broker.policy:unenforce"),
+                     ("What needs approval", "argus_iris.cli:check")],
+          policy=REHEARSE_POLICY, env={"IRIS_REPORT_ONLY": "1", "ARGUS_GPU_BROKER_TOKEN": "rehearsal"}),
 ]  # fmt: skip
-SETUP = {"eviction": eviction_setup}
+SETUP = {"eviction": eviction_setup, "rehearse": rehearse_setup}

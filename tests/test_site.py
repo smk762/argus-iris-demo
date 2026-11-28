@@ -13,7 +13,7 @@ from record.__main__ import TAPE
 from scripts import build
 from tests.serve import OUT, start
 
-KEYS = ["contention", "eviction", "spill", "crash", "stall"]
+KEYS = ["contention", "eviction", "spill", "crash", "stall", "rehearse"]
 
 
 @pytest.fixture(scope="module")

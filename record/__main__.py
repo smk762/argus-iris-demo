@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib
 import inspect
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -32,16 +33,26 @@ def code_link(spec: str) -> str:
 
 def record(scene: Scene, seed: int) -> dict:
     async def play() -> Stage:
-        stage = Stage(**scene.config)
+        stage = Stage(policy=scene.policy, **scene.config)
         if scene.key in SETUP:
             SETUP[scene.key](stage)
         await stage.open()
         await scene.play(stage)
+        stage.end = stage.t  # a quiet scene sends no events after its last caption, so its length is taken here
         stage.recording = False
         return stage
 
-    s = virtual.run(play, seed)
-    end = max([s.t, *(e["t"] for e in s.events)])
+    before = {k: os.environ.get(k) for k in scene.env}
+    os.environ.update(scene.env)
+    try:
+        s = virtual.run(play, seed)
+    finally:
+        for k, v in before.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+    end = max([s.end, *(e["t"] for e in s.events)])
     return {
         "key": scene.key, "title": scene.title, "lede": scene.lede, "why": scene.why,
         "code": [{"label": label, "url": code_link(spec)} for label, spec in scene.code],

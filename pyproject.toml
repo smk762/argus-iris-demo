@@ -4,7 +4,7 @@ version = "0"
 description = "Guided replay of argus-iris: the published broker, recorded against simulated GPU hosts"
 requires-python = ">=3.11"
 # The published wheel, pinned: the demo shows what `pip install argus-iris` gives you.
-dependencies = ["argus-iris[server,cli]==0.2.1"]
+dependencies = ["argus-iris[server,cli]==0.2.3"]
 
 [dependency-groups]
 dev = ["pytest>=8", "ruff==0.15.16", "playwright>=1.45"]
